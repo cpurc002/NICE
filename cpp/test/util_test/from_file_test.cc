@@ -54,9 +54,9 @@ TYPED_TEST(FromFileTest, IfFileExists) {
   this->expected.resize(2, 2);
   this->expected << 1, 2,
                     3, 99;
-  for(int i = 0; i < this->expected.rows(); ++i) {
-    for(int j = 0; j < this->expected.cols(); ++j) {
-      EXPECT_NEAR(this->expected(i,j), this->result(i,j), 0.0001);
+  for (int i = 0; i < this->expected.rows(); ++i) {
+    for (int j = 0; j < this->expected.cols(); ++j) {
+      EXPECT_NEAR(this->expected(i, j), this->result(i, j), 0.0001);
     }
   }
 }
@@ -66,9 +66,9 @@ TYPED_TEST(FromFileTest, NonSquareMatrix) {
   this->expected.resize(2, 3);
   this->expected << 1, 2, 3,
                     4, 5, 6;
-  for(int i = 0; i < this->expected.rows(); ++i) {
-    for(int j = 0; j < this->expected.cols(); ++j) {
-      EXPECT_NEAR(this->expected(i,j), this->result(i,j), 0.0001);
+  for (int i = 0; i < this->expected.rows(); ++i) {
+    for (int j = 0; j < this->expected.cols(); ++j) {
+      EXPECT_NEAR(this->expected(i, j), this->result(i, j), 0.0001);
     }
   }
 }
@@ -92,9 +92,9 @@ TYPED_TEST(FromFileTest, IfFileExistsRowsAndColsMethod) {
   this->expected.resize(2, 2);
   this->expected << 1, 2,
                     3, 99;
-  for(int i = 0; i < this->expected.rows(); ++i) {
-    for(int j = 0; j < this->expected.cols(); ++j) {
-      EXPECT_NEAR(this->expected(i,j), this->result(i,j), 0.0001);
+  for (int i = 0; i < this->expected.rows(); ++i) {
+    for (int j = 0; j < this->expected.cols(); ++j) {
+      EXPECT_NEAR(this->expected(i, j), this->result(i, j), 0.0001);
     }
   }
 }
