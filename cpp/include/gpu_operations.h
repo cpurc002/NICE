@@ -58,8 +58,7 @@ class GpuOperations {
   ///  const T &scalar : The scalar to multiply the matirx
   ///
   ///  \return
-  ///  static Matrix<T> Multiply(const Matrix<T> &a, const T &scalar)
-  ///                   returns the resulting matrix of a[i] = a[i] * scalar
+  ///   returns the resulting matrix of a[i] = a[i] * scalar
   ///
   ///  \sa
   ///  \ref static Matrix<T> Multiply(const Matrix<T> &a, const Matrix<T> &b)
@@ -104,9 +103,8 @@ class GpuOperations {
   ///  const Matrix<T> &b : The k x n input matrix
   ///
   ///  \return
-  ///  static Matrix<T> Multiply(const Matrix<T> &a, const Matrix<T> &b)
-  ///                   returns the resulting matrix of
-  ///                   c[i,j] = sum(l=0->l=k){a[i,l] * b[l,j]}
+  ///  returns the resulting matrix of
+  ///  c[i,j] = sum(l=0->l=k){a[i,l] * b[l,j]}
   ///
   ///  \sa
   ///  \ref static Matrix<T> Multiply(const Matrix<T> &a, const T &scalar)
@@ -380,10 +378,7 @@ class GpuOperations {
   ///                    column major order.
   ///
   ///  \return
-  ///  static Vector<T> Norm(const Matrix<T> &a, const int &p = 2,
-  ///                        const int &axis = 0)
-  ///                   returns the resulting vector of
-  ///                   v[i] = norm(j=0->j=m){a[j,i]}
+  ///  returns the resulting vector of v[i] = norm(j=0->j=m){a[j,i]}
   ///
   ///  \sa
   ///  \ref static T FrobeniousNorm(const Matrix<T> &a)
@@ -436,12 +431,11 @@ class GpuOperations {
   ///  const Matrix<T> &a : The m x n matrix to have determinant found
   ///
   ///  \return
-  ///  static T Determinant(const Matrix<T> &a)
-  ///           returns the result of det = product(i == j){U(i,j)} * (-1)^n
-  ///           where U is the upper triangular matrix produced by doing LU
-  ///           decomposition on matrix a, product(i == j){U(i,j)} means
-  ///           means multiplying the diagonal elements of U, and n is the
-  ///           number of pivots needed to calculate U.
+  ///  returns the result of det = product(i == j){U(i,j)} * (-1)^n
+  ///  where U is the upper triangular matrix produced by doing LU
+  ///  decomposition on matrix a, product(i == j){U(i,j)} means
+  ///  means multiplying the diagonal elements of U, and n is the
+  ///  number of pivots needed to calculate U.
   static T Determinant(const Matrix<T> &a) {
     int m = a.rows();
     int n = a.cols();
@@ -542,10 +536,9 @@ class GpuOperations {
   ///                       frobenious norm found
   ///
   ///  \return
-  ///  static T FrobeniousNorm(const Matrix<T> &a)
-  ///           returns the resulting scalar produced by
-  ///           c = (sum(i=0->i=m*n){a[i]^2})^(1/2) where the rhs
-  ///           is the norm of the input matrix if treated as a single vector
+  ///  returns the resulting scalar produced by
+  ///  c = (sum(i=0->i=m*n){a[i]^2})^(1/2) where the rhs
+  ///  is the norm of the input matrix if treated as a single vector
   ///
   ///  \sa
   ///  \ref static T FrobeniousNorm(const Matrix<T> &a)
@@ -662,9 +655,8 @@ class GpuOperations {
   ///  const Vector<T> &b : The k , 1 input vector
   ///
   ///  \return
-  ///  static T DotProduct(const Vector<T> &a, const Vector<T> &b)
-  ///                   returns the resulting sumation of
-  ///                   c = sum(l=0->l=k){a[l] * b[l]}
+  ///  returns the resulting sumation of
+  ///  c = sum(l=0->l=k){a[l] * b[l]}
   static T DotProduct(const Vector<T> &a, const Vector<T> &b) {
     int n = a.rows();
 
@@ -709,9 +701,8 @@ class GpuOperations {
   ///  const Vector<T> &b : The 1 x p input vector
   ///
   ///  \return
-  ///  static Matrix<T> OuterProduct(const Matrix<T> &a, const Matrix<T> &b)
-  ///                   returns the resulting matrix of
-  ///                   c[i,j] = sum(l=0->l=p){a[i,l] * b[l,j]}
+  ///  returns the resulting matrix of
+  ///  c[i,j] = sum(l=0->l=p){a[i,l] * b[l,j]}
   ///
   ///  \sa
   ///  \ref static Matrix<T> Multiply(const Matrix<T> &a, const Matrix<T> &b)
