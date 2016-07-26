@@ -42,7 +42,7 @@
 #include "include/gpu_util.h"                                                   
 #include "include/gpu_svd_solver.h"                                             
 #include "include/util.h" 
-#include "include/kmeans_kernels.cuh"
+#include "include/kmeans_kernels.h"
                                                                                
 namespace Nice {                                                                
                                                                                 
@@ -113,7 +113,7 @@ class GpuKmeans {
                                                                                  
      startTime(&timer);                                                          
      std::cout<<"\nRunning Kmeans"<<std::endl;                                   
-     doKmeans(deviceProp, d_data, d_clusters, d_labels, d_distances, 
+     doKmeans<T>(deviceProp, d_data, d_clusters, d_labels, d_distances, 
               numK, numObjs, numDims); 
      std::cout<<"Finished running Kmeans"<<std::endl;                            
      std::cout<<"  Elapsed time to run Kmeans: ";                                
@@ -192,9 +192,6 @@ class GpuKmeans {
                                                                                 
                                                                                
 };                                                                              
-
-template class GpuKmeans<float>;
-template class GpuKmeans<double>;
 
 }  // namespace Nice                                                            
 #endif  // NEED_CUDA                                                            

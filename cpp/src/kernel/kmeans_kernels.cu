@@ -13,8 +13,9 @@
     dst[idx*numDims + i] = c_clusters[idx * numDims + i]; 
   }
 }*/
+namespace Nice {
 
-template<typename T>
+template <typename T>
 __global__ void classifyPoints(T *data, T *clusters, 
                                float *distances, int *labels, 
                                int numK, int numDims) {
@@ -51,7 +52,8 @@ __global__ void classifyPoints(T *data, T *clusters,
    *(labels + labelID) = closestClusterID; 
    }
 }
-template<typename T>
+
+template <typename T>
 void doKmeans(cudaDeviceProp DeviceProp, T *data, T *clusters, int *labels,
               float *distances, int numK, int numObjs, int numDims) { 
 
@@ -68,3 +70,16 @@ void doKmeans(cudaDeviceProp DeviceProp, T *data, T *clusters, int *labels,
    cudaFree(distances); 
 }
 
+template __global__ void classifyPoints<float>(float *data, float *clusters,                            
+                               float *distances, int *labels,                   
+                               int numK, int numDims);
+template __global__ void classifyPoints<double> (double *data, double *clusters,                            
+                               float *distances, int *labels,                   
+                               int numK, int numDims);
+
+template void doKmeans<float>(cudaDeviceProp DeviceProp, float *data, float *clusters, int *labels,     
+              float *distances, int numK, int numObjs, int numDims) ;
+template void doKmeans<double> (cudaDeviceProp DeviceProp, double *data, double *clusters, int *labels,     
+              float *distances, int numK, int numObjs, int numDims) ;
+
+}
