@@ -23,7 +23,7 @@ include_directories(${EIGEN_INCLUDE_DIRS})
 include_directories(${COMMON_INCLUDES}) 
 
 # Set source files
-file(GLOB_RECURSE SOURCES RELATIVE ${CMAKE_SOURCE_DIR} src/*.cc)
+file(GLOB_RECURSE SOURCES RELATIVE ${CMAKE_SOURCE_DIR} src/*.cc src/*.cu)
 message(STATUS "Source files: " ${SOURCES})
 
 # Locate CUDA package 
@@ -83,6 +83,7 @@ if (enable-test)
          test/cpu_solver_test/*.cc
          test/gpu_operations_test/*.cc
          test/gpu_solver_test/*.cc
+         test/gpu_kmeans_test/*.cc
          )
   else()
     file(GLOB_RECURSE TEST_SRC_FILES RELATIVE 
