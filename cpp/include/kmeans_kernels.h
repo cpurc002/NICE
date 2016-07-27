@@ -36,17 +36,19 @@
 #include <sys/time.h>                                                           
 #include <string>                                                               
 #include <stdint.h>                                                             
+#include "include/matrix.h"
+#include "include/vector.h"
 
 namespace Nice {
 
 template <typename T>
 __global__ void classifyPoints(T *data, T *clusters,                            
-                               float *distances, int *labels,                   
-                               int numK, int numDims);
+                               T *distances, int *labels,                   
+                               int numK, int numObjs, int numDims);
 
 template <typename T>
 void doKmeans(cudaDeviceProp DeviceProp, T *data, T *clusters, int *labels,     
-              float *distances, int numK, int numObjs, int numDims) ;
+              T *distances, int numK, int numObjs, int numDims) ;
 }  // namespace Nice
 
 #endif  // NEED_CUDA

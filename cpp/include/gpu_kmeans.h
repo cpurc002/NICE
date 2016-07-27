@@ -30,7 +30,8 @@
 #include<device_launch_parameters.h>                                            
 #include<cuda_runtime_api.h>                                                    
 #include <cublas_v2.h>                                                          
-#include <cusolverDn.h>                                                         
+#include <cusolverDn.h>              
+#include <Eigen/Dense>                                            
 #include <unistd.h>                                                             
 #include <stdexcept>                                                            
 #include <ctime>                                                                
@@ -58,11 +59,14 @@ class GpuKmeans {
    Matrix<T> *centers_;                                                         
   
    Matrix<T> setInitalClusters(const Matrix<T> &data, Matrix<T> &clusters,
-                               int numK, int numObjs, int numDim)     
+                               int numK, int numObjs, int numDims)     
    {                                                                               
-     int stride = numObjs / numK ;                                                                                      
+     int stride = numObjs / numK ;
+     std::cout<<"stride"<<stride<<std::endl;                                                                                      
+     std::cout<<"numK"<<numK<<std::endl; 
+     std::cout<<"numDims"<<numDims<<std::endl;
      for (int i = 0; i < numK; ++i) {                                              
-       for (int j = 0; j < numDim; ++j) {                                          
+       for (int j = 0; j < numDims; ++j) {                                          
         clusters(i, j) = data(stride * i, j);                                      
        }                                                                           
      }                                                                             
@@ -71,7 +75,10 @@ class GpuKmeans {
    void cuda_main(const Matrix<T> &h_data, int numK) {                                                                               
      Timer timer;                                                                
      int numObjs = h_data.rows(); 
-     int numDims = h_data.cols();                                                       
+     int numDims = h_data.cols(); 
+
+
+     std::cout<<"numObjs : "<<numObjs<<std::endl;                                                      
                                                                                  
      // Initialize host variables ----------------------------------------------                                                                             
      startTime(&timer);                                                          
@@ -96,9 +103,11 @@ class GpuKmeans {
      int dataSize = numObjs * numDims * sizeof(T);                           
      int clusterSize = numK * numDims * sizeof(T);                           
      int labelSize = numObjs * sizeof(int);
-     int distanceSize = numK * numObjs * sizeof(float); 
-     float *d_distances;
-     gpuErrchk(cudaMalloc((void **)&d_distances, distanceSize));                                      
+     int distanceSize = numK * numObjs * sizeof(T); 
+     T *d_distances;
+     gpuErrchk(cudaMalloc((void **)&d_distances, distanceSize));                                 
+     cudaMemset(d_distances, 0, distanceSize); 
+
      T *d_data; gpuErrchk(cudaMalloc((void **)&d_data, dataSize));           
      T *d_clusters; gpuErrchk(cudaMalloc((void**)&d_clusters, clusterSize)); 
      int *d_labels; gpuErrchk(cudaMalloc((void **)&d_labels, labelSize));        
@@ -122,21 +131,24 @@ class GpuKmeans {
                                                                                  
      startTime(&timer);                                                          
      std::cout<<"\nTransfering data back from GPU"<<std::endl;                   
-     Matrix<T> h_data_ret(numDims, numObjs);                            
-     Matrix<T> h_clusters_ret(numDims, numObjs);                        
-     Vector<int> h_labels(labelSize);
+     Matrix<T> h_data_ret(numObjs, numDims);                            
+     Matrix<T> h_clusters_ret(numK, numDims);                        
+     Vector<int> h_labels(numObjs);
+     Matrix<T> h_distances(numObjs, numK);
      gpuErrchk(cudaMemcpy(&h_data_ret(0, 0), d_data, dataSize, 
                cudaMemcpyDeviceToHost)); 
      gpuErrchk(cudaMemcpy(&h_clusters_ret(0, 0), d_clusters, clusterSize, 
                cudaMemcpyDeviceToHost));
      gpuErrchk(cudaMemcpy(&h_labels(0), d_labels, labelSize, 
                cudaMemcpyDeviceToHost));
+     gpuErrchk(cudaMemcpy(&h_distances(0, 0), d_distances, distanceSize, 
+               cudaMemcpyDeviceToHost)); 
      std::cout<<"Finished transfering data back from GPU"<<std::endl;            
      std::cout<<"  Elapsed time to tranfer memories ";                           
      std::cout<<elapsedTime(timer)<<std::endl;
   
      int n = numObjs / numK;                                                               
-     Vector<int> labels_ref(labelSize);                                 
+     Vector<int> labels_ref(numObjs);                                 
      for (int i = 0; i < numK; ++i) {                                            
        for (int j = 0; j < n; ++j) {                                          
           labels_ref(i * n + j) = i;                                      
@@ -144,16 +156,36 @@ class GpuKmeans {
      }                                                                           
 
      std::cout<<"\nPredicted Labels: "<<std::endl;                               
-     for (int i = 0; i < numObjs; i = i + n) {                                   
+     for (int i = 0; i < numObjs/1000; i = i + 1) {                                   
        std::cout<<h_labels(i)<<std::endl;                                    
      }                                                                           
                                                                                  
-     std::cout<<"\nRef Labels: "<<std::endl;                                     
-     for (int i = 0; i < numObjs; i = i + n) {                                   
-       std::cout<<labels_ref(i)<<std::endl;                                  
-     }                                                                           
-                                                                                 
-     std::cout<<"\nData ret: "<<std::endl;                                       
+//     std::cout<<"\nRef Labels: "<<std::endl;                                     
+//     for (int i = 0; i < numObjs; i = i + n/2) {                                   
+//       std::cout<<labels_ref(i)<<std::endl;                                  
+//     }                                                                           
+    
+     std::cout<<"\nVerifying Labels"<<std::endl; 
+     bool labelsPassed = true; 
+     for (int i = 0; i < numObjs; ++i)  
+       if (labels_ref(i) != h_labels(i) && labelsPassed) 
+         labelsPassed = false; 
+     if (labelsPassed) 
+        std::cout<<"Labels Passed"<<std::endl; 
+     else
+        std::cout<<"Labels Failed"<<std::endl;  
+     
+/*     std::cout<<"\nClusters ret: "<<std::endl;                                   
+     for (int i = 0; i < numK; ++i) {                                            
+       for (int j = 0; j < numDims; ++j) {                                       
+         std::cout<<h_clusters_ret(i, j)<<" ";                                   
+       }                                                                         
+       std::cout<<std::endl;                                                     
+     }
+ 
+                                                                             
+     std::cout<<"\nData input / ret: "<<std::endl;   
+     std::cout<<h_data<<"\n\n"<<std::endl;                                     
      for (int i = 0; i < numObjs; ++i) {                                         
        for (int j = 0; j < numDims; ++j) {                                       
          std::cout<<h_data_ret(i, j)<<" ";                                       
@@ -161,18 +193,18 @@ class GpuKmeans {
        std::cout<<std::endl;                                                     
      }                                                                           
                                                                                  
-     std::cout<<"\nClusters ret: "<<std::endl;                                   
-     for (int i = 0; i < numK; ++i) {                                            
-       for (int j = 0; j < numDims; ++j) {                                       
-         std::cout<<h_clusters_ret(i, j)<<" ";                                   
-       }                                                                         
-       std::cout<<std::endl;                                                     
-     }                                                                           
-                                                                                 
-     std::cout<<"Here"<<std::endl;                                               
-     //verify(labels_ref, h_labels, numObjs, 1, "Labels");                         
-     //verify(h_data, h_data_ret, numDims, numObjs, "Data");                       
-     //verify(h_clusters, h_clusters_ret, numDims, numK, "Clusters");              
+  
+     std::cout<<"\nDistances ret: "<<std::endl;                                  
+     for (int i = 0; i < numObjs; ++i) {                                           
+       for (int j = 0; j < numK; ++j) {                                      
+         std::cout<<h_distances(i, j)<<" ";                                  
+       }                                                                        
+       std::cout<<std::endl;                                                    
+     }                                                                          
+ */                                                                                
+//     verify<T>(labels_ref, h_labels, numObjs, 1, "Labels");                         
+//     verify(h_data, h_data_ret, numDims, numObjs, "Data");                       
+//     verify(h_clusters, h_clusters_ret, numDims, numK, "Clusters");              
                                                                                  
      std::cout<<"\nFreeing data"<<std::endl;                                     
      cudaFree(d_data); cudaFree(d_labels); cudaFree(d_clusters);

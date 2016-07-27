@@ -31,6 +31,7 @@
 
 #include <iostream>
 #include <cmath>
+#include <sstream>  
 
 #include "include/gpu_kmeans.h"
 #include "include/gpu_operations.h"
@@ -57,10 +58,16 @@ TYPED_TEST_CASE(GpuKmeansTest, dataTypes);
 TYPED_TEST(GpuKmeansTest, FuncionalityTest) {
   srand(time(NULL));
   // Create test data
-  std::string file = "../data_for_tests/data_k5_p5_d5_c5.txt";
+  int numK = 27; 
+  int numObjs =  5000; 
+  int numDims = 50; 
+  int numC = 50; 
+  std::stringstream sstm;                                                     
+  sstm<<"../test/data_for_test/data_k"<<numK<<"_p"<<numObjs<<"_d"<<numDims<<"_c"<<numC<<".txt";      
+  std::string file = sstm.str();
   Nice::Matrix<TypeParam> input_data = Nice::util::FromFile<TypeParam>(file); 
-   
-  int numK = 5; 
+
+
   Nice::Vector<int>* predicted_labels; 
   Nice::Matrix<TypeParam>* predicted_clusters;  
   // Test gpu matrix matrix multiply in Nice

@@ -70,36 +70,7 @@ void copyDeviceToHost(float * h_data, const float * d_data, int size) {
 void copyDeviceToHost(double * h_data, const double * d_data, int size) {              
   gpuErrchk(cudaMemcpy(h_data, d_data, size, cudaMemcpyDeviceToHost));          
 } 
-void verify(const Matrix<float>& reference, const Matrix<float>& test, 
-            int dimX, int dimY, std::string name) {                                               
-  for (int i = 0; i < dimY; ++i)                                             
-    for (int j = 0; j < dimX; ++j)                                           
-      if (reference(i, j) != test(i, j)){                                    
-        std::cout<<name<<" Failed Verify"<<std::endl;                        
-        return;                                                              
-      }                                                                      
-  std::cout<<"\n"<<name<<" Verified"<<std::endl;                             
-}                                                                            
-void verify(const Matrix<double>& reference, const Matrix<double>& test, 
-            int dimX, int dimY, std::string name) {                                               
-  for (int i = 0; i < dimY; ++i)                                             
-    for (int j = 0; j < dimX; ++j)                                           
-      if (reference(i, j) != test(i, j)){                                    
-        std::cout<<name<<" Failed Verify"<<std::endl;                        
-        return;                                                              
-      }                                                                      
-  std::cout<<"\n"<<name<<" Verified"<<std::endl;                             
-}                    
-void verify(const Vector<int>& reference, const Vector<int>& test, 
-            int dimX, std::string name) {                                              
-  for (int i = 0; i < dimX; ++i)                                             
-      if (reference[i] != test[i]){                                          
-        std::cout<<name<<" Failed Verify"<<std::endl;                        
-        return;                                                              
-      }                                                                      
-  std::cout<<"\n"<<name<<" Verified"<<std::endl;                                
-}
-                                                  
+                                                 
 cudaDeviceProp setDevice() {                                                    
   int deviceCount;                                                              
   int bestDeviceIndex = 0;                                                      

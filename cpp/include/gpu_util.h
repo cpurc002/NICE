@@ -63,7 +63,9 @@ void verify(const Nice::Matrix<float>&, const Nice::Matrix<float>&,
 void verify(const Nice::Matrix<double>&, const Nice::Matrix<double>&, 
             int, int, std::string);                         
 void verify(const Nice::Vector<int>&, const Nice::Vector<int>&,
-            int, int, std::string); 
+            int, int, std::string);  
+void verify(const Nice::Matrix<int>&, const Nice::Matrix<int>&,
+            int, int, std::string);
 void copyHostToDevice(int *, const int *, int);                                       
 void copyHostToDevice(float *, const float *, int);                                   
 void copyHostToDevice(double *, const double *, int);                                  
