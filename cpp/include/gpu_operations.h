@@ -54,7 +54,7 @@ class GpuOperations {
   ///
   ///  \param a
   ///  const Matrix<T> &a : The m x n matrix to be multiplied by the scalar
-  ///  \param b
+  ///  \param scalar
   ///  const T &scalar : The scalar to multiply the matirx
   ///
   ///  \return
@@ -371,9 +371,9 @@ class GpuOperations {
   ///
   ///  \param a
   ///  const Matrix<T> &a : The input matrix to have the norm found
-  ///  \param b
+  ///  \param p
   ///  const int &p : Sets which Lx norm to calcualte. Here set to 2 for L2 norm
-  ///  \param c
+  ///  \param axis
   ///  const int &axis : Sets row or column major order. Here set to 0 for
   ///                    column major order.
   ///
@@ -652,7 +652,7 @@ class GpuOperations {
   ///  \param a
   ///  const Vector<T> &a : The 1 x k input vector
   ///  \param b
-  ///  const Vector<T> &b : The k , 1 input vector
+  ///  const Vector<T> &b : The k x 1 input vector
   ///
   ///  \return
   ///  returns the resulting sumation of
