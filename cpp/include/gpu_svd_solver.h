@@ -119,11 +119,32 @@ class GpuSvdSolver {
     cudaFree(d_s); cudaFree(d_u); cudaFree(d_v); cudaFree(work);
     cusolverDnDestroy(solver_handle);
   }
-
+  
+  /// Return the matrix U after SVD decomposition                               
+  ///                                                                           
+  /// \param                                                                    
+  /// Void                                                                      
+  ///                                                                           
+  /// \return                                                                   
+  /// Matrix U
   Matrix<T> MatrixU() const              { return u_; }
 
+  /// Return the matrix V after SVD decomposition                               
+  ///                                                                           
+  /// \param                                                                    
+  /// Void                                                                      
+  ///                                                                           
+  /// \return                                                                   
+  /// Matrix V
   Matrix<T> MatrixV() const              { return v_; }
 
+  /// Return the Singular Values Vector after SVD decomposition                               
+  ///                                                                           
+  /// \param                                                                    
+  /// Void                                                                      
+  ///                                                                           
+  /// \return                                                                   
+  /// Vector Singular Values
   Vector<T> SingularValues() const       { return s_; }
 };
 }  // namespace Nice
