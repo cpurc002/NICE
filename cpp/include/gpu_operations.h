@@ -54,7 +54,7 @@ class GpuOperations {
   ///
   ///  \param a
   ///  const Matrix<T> &a : The m x n matrix to be multiplied by the scalar
-  ///  \param scalar
+  ///  \param b
   ///  const T &scalar : The scalar to multiply the matirx
   ///
   ///  \return
@@ -457,9 +457,9 @@ class GpuOperations {
   ///
   ///  \param a
   ///  const Matrix<T> &a : The input matrix to have the norm found
-  ///  \param p
+  ///  \param b
   ///  const int &p : Sets which Lx norm to calcualte. Here set to 2 for L2 norm
-  ///  \param axis
+  ///  \param c
   ///  const int &axis : Sets row or column major order. Here set to 0 for
   ///                    column major order.
   ///
@@ -643,7 +643,7 @@ class GpuOperations {
     int incx = 1;
     const T * h_a = &a(0);
 
-    // Traceocate and transfer memories
+    //Traceocate and transfer memories
     T * h_c = reinterpret_cast<T *>(malloc(sizeof(T)));
     T * d_a;  gpuErrchk(cudaMalloc(&d_a, m * n * sizeof(T)));
     gpuErrchk(cudaMemcpy(d_a, h_a, m * n * sizeof(T), cudaMemcpyHostToDevice));
@@ -756,7 +756,7 @@ class GpuOperations {
   ///  \param a
   ///  const Vector<T> &a : The 1 x k input vector
   ///  \param b
-  ///  const Vector<T> &b : The k x 1 input vector
+  ///  const Vector<T> &b : The k , 1 input vector
   ///
   ///  \return
   ///  returns the resulting sumation of
