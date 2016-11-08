@@ -1,13 +1,40 @@
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <cinttypes>
-#include <cfloat>
-#include <cmath>
-#include <cassert>
-#include <memory>
+// The MIT License (MIT)
+//
+// Copyright (c) 2016 source{d}.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
+
 
 #include <cuda_runtime_api.h>
+#include <memory>
+#include <cfloat>
+#include <cinttypes>
+#include <cassert>
+#include <cstring>
+#include <cmath>
+
+#include <cstdlib>
+#include <cstdio>
+
+
+
 
 #include "include/wrappers.h"
 #include "include/private.h"
@@ -16,12 +43,12 @@
 #define CUMEMCPY(dst, src, size, flag) \
 do { if (cudaMemcpy(dst, src, size, flag) != cudaSuccess) { \
   return kmcudaMemoryCopyError; \
-} } while(false)
+} } while (false)
 
 #define CUMEMCPY_ASYNC(dst, src, size, flag) \
 do { if (cudaMemcpyAsync(dst, src, size, flag) != cudaSuccess) { \
   return kmcudaMemoryCopyError; \
-} } while(false)
+} } while (false)
 
 #define CUMALLOC(dest, size, name) do { \
   DEBUG(name ": %zu\n", size); \
@@ -29,10 +56,11 @@ do { if (cudaMemcpyAsync(dst, src, size, flag) != cudaSuccess) { \
     INFO("failed to allocate %zu bytes for " name "\n", size); \
     return kmcudaMemoryAllocationFailure; \
   } \
-} while(false)
+} while (false)
 
 static int check_args(
-    float tolerance, float yinyang_t, uint32_t samples_size, uint16_t features_size,
+    float tolerance, float yinyang_t, uint32_t samples_size,
+    uint16_t features_size,
     uint32_t clusters_size, const float *samples, float *centroids,
     uint32_t *assignments) {
   if (clusters_size < 2 || clusters_size == UINT32_MAX) {
@@ -61,8 +89,8 @@ static KMCUDAResult print_memory_stats() {
   if (cudaMemGetInfo(&free_bytes, &total_bytes) != cudaSuccess) {
     return kmcudaRuntimeError;
   }
-  printf("GPU memory: used %zu bytes (%.1f%%), free %zu bytes, total %zu bytes\n",
-         total_bytes - free_bytes, (total_bytes - free_bytes) * 100.0 / total_bytes,
+  printf("GPU memory: used %zu B (%.1f%%), free %zu B, total %zu B\n",
+         total_bytes-free_bytes, (total_bytes-free_bytes) * 100.0/total_bytes,
          free_bytes, total_bytes);
   return kmcudaSuccess;
 }
@@ -82,19 +110,22 @@ KMCUDAResult kmeans_init_centroids(
         if ((c + 1) % 1000 == 0 || c == clusters_size - 1) {
           INFO("\rcentroid #%" PRIu32, c + 1);
           fflush(stdout);
+          unsigned int seed;
           CUMEMCPY(centroids + c * features_size,
-                   samples + (rand() % samples_size) * features_size,
+                   samples + (rand_r(&seed) % samples_size) * features_size,
                    ssize, cudaMemcpyDeviceToDevice);
         } else {
+          unsigned int seed;
           CUMEMCPY_ASYNC(centroids + c * features_size,
-                         samples + (rand() % samples_size) * features_size,
+                         samples + (rand_r(&seed) % samples_size)*features_size,
                          ssize, cudaMemcpyDeviceToDevice);
         }
       }
       break;
     case kmcudaInitMethodPlusPlus:
       INFO("performing kmeans++...\n");
-      CUMEMCPY(centroids, samples + (rand() % samples_size) * features_size,
+      unsigned int seed1, seed2;
+      CUMEMCPY(centroids, samples+(rand_r(&seed1)%samples_size) * features_size,
                ssize, cudaMemcpyDeviceToDevice);
       std::unique_ptr<float[]> host_dists(new float[samples_size]);
       float *dev_sums = NULL;
@@ -107,13 +138,14 @@ KMCUDAResult kmeans_init_centroids(
         }
         float dist_sum = 0;
         RETERR(kmeans_cuda_plus_plus(
-            samples_size, i, samples, centroids, reinterpret_cast<float*>(dists),
+            samples_size, i, samples, centroids,
+            reinterpret_cast<float*>(dists),
             &dist_sum, &dev_sums),
                DEBUG("\nkmeans_cuda_plus_plus failed\n"));
         assert(dist_sum == dist_sum);
         CUMEMCPY(host_dists.get(), dists, samples_size * sizeof(float),
                  cudaMemcpyDeviceToHost);
-        double choice = ((rand() + .0) / RAND_MAX);
+        double choice = ((rand_r(&seed2) + .0) / RAND_MAX);
         uint32_t choice_approx = choice * samples_size;
         double choice_sum = choice * dist_sum;
         uint32_t j;
@@ -135,7 +167,9 @@ KMCUDAResult kmeans_init_centroids(
             dist_sum2 += host_dists[t];
           }
           if (dist_sum2 < choice_sum) {
-            for (j = choice_approx; j < samples_size && dist_sum2 < choice_sum; j++) {
+            for (j = choice_approx;
+                 j < samples_size && dist_sum2 < choice_sum;
+                 j++) {
               dist_sum2 += host_dists[j];
             }
           } else {
@@ -157,8 +191,9 @@ KMCUDAResult kmeans_init_centroids(
   return kmcudaSuccess;
 }
 
-int kmeans_cuda(bool kmpp, float tolerance, float yinyang_t, uint32_t samples_size,
-                uint16_t features_size, uint32_t clusters_size, uint32_t seed,
+int kmeans_cuda(bool kmpp, float tolerance, float yinyang_t,
+                uint32_t samples_size, uint16_t features_size,
+                uint32_t clusters_size, uint32_t seed,
                 uint32_t device, int32_t verbosity, const float *samples,
                 float *centroids, uint32_t *assignments) {
   DEBUG("arguments: %d %.3f %.2f %" PRIu32 " %" PRIu16 " %" PRIu32 " %" PRIu32
@@ -179,7 +214,8 @@ int kmeans_cuda(bool kmpp, float tolerance, float yinyang_t, uint32_t samples_si
   size_t device_samples_size = samples_size;
   device_samples_size *= features_size * sizeof(float);
   CUMALLOC(device_samples, device_samples_size, "samples");
-  CUMEMCPY(device_samples, samples, device_samples_size, cudaMemcpyHostToDevice);
+  CUMEMCPY(device_samples, samples, device_samples_size,
+           cudaMemcpyHostToDevice);
   unique_devptr device_samples_sentinel(device_samples);
 
   void *device_centroids;
@@ -243,7 +279,8 @@ int kmeans_cuda(bool kmpp, float tolerance, float yinyang_t, uint32_t samples_si
          DEBUG("kmeans_init_centroids failed: %s\n",
                cudaGetErrorString(cudaGetLastError())));
   RETERR(kmeans_cuda_yy(
-      tolerance, yinyang_groups, samples_size, clusters_size, features_size, verbosity,
+      tolerance, yinyang_groups, samples_size, clusters_size, features_size,
+      verbosity,
       reinterpret_cast<float*>(device_samples),
       reinterpret_cast<float*>(device_centroids),
       reinterpret_cast<uint32_t*>(device_ccounts),
@@ -257,7 +294,8 @@ int kmeans_cuda(bool kmpp, float tolerance, float yinyang_t, uint32_t samples_si
          DEBUG("kmeans_cuda_internal failed: %s\n",
                cudaGetErrorString(cudaGetLastError())));
   CUMEMCPY(centroids, device_centroids, centroids_size, cudaMemcpyDeviceToHost);
-  CUMEMCPY(assignments, device_assignments, assignments_size, cudaMemcpyDeviceToHost);
+  CUMEMCPY(assignments, device_assignments, assignments_size,
+           cudaMemcpyDeviceToHost);
   DEBUG("return kmcudaSuccess\n");
   return kmcudaSuccess;
 }

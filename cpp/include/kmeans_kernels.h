@@ -19,37 +19,37 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-#ifndef CPP_INCLUDE_KERNELS_H_
-#define CPP_INCLUDE_KERNELS_H_
+#ifndef CPP_INCLUDE_KMEANS_KERNELS_H_
+#define CPP_INCLUDE_KMEANS_KERNELS_H_
 
 #ifdef NEED_CUDA
 
 #include <cuda.h>
+#include <time.h>
+#include <sys/time.h>
+#include <stdint.h>
 #include <cuda_runtime_api.h>
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 #include <device_functions.h>
 #include <cusolverDn.h>
+#include <string>
 #include <ctime>
-#include <time.h>
 #include <iostream>
-#include <sys/time.h>                                                           
-#include <string>                                                               
-#include <stdint.h>                                                             
 #include "include/matrix.h"
 #include "include/vector.h"
 
 namespace Nice {
 
 template <typename T>
-__global__ void classifyPoints(T *data, T *clusters,                            
-                               T *distances, int *labels,                   
+__global__ void classifyPoints(T *data, T *clusters,
+                               T *distances, int *labels,
                                int numK, int numObjs, int numDims);
 
 template <typename T>
-void doKmeans(cudaDeviceProp DeviceProp, T *data, T *clusters, int *labels,     
-              T *distances, int numK, int numObjs, int numDims) ;
+void doKmeans(cudaDeviceProp DeviceProp, T *data, T *clusters, int *labels,
+              T *distances, int numK, int numObjs, int numDims);
 }  // namespace Nice
 
 #endif  // NEED_CUDA
-#endif  // CPP_INCLUDE_KERNELS_H_
+#endif  // CPP_INCLUDE_KMEANS_KERNELS_H_

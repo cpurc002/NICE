@@ -39,7 +39,7 @@ namespace Nice {
 template<typename T>
 class CpuOperations {
  public:
-  /// This is a function that calculates the transpose Matrix of the input Matrix
+  /// This function calculates the transpose Matrix of the input Matrix
   ///
   /// \param a
   /// Input Matrix
@@ -50,7 +50,7 @@ class CpuOperations {
     return a.transpose();  // Return transpose
   }
 
-  /// This is a function that calculates the transpose Vector of the input Vector
+  /// This function calculates the transpose Vector of the input Vector
   ///
   /// \param a
   /// Input Vector
